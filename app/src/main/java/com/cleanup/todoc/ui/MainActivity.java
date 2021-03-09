@@ -6,11 +6,13 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -18,12 +20,16 @@ import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.cleanup.todoc.R;
+import com.cleanup.todoc.injection.Injection;
+import com.cleanup.todoc.injection.ViewModelFactory;
 import com.cleanup.todoc.model.Project;
 import com.cleanup.todoc.model.Task;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
+import java.util.List;
 
 /**
  * <p>Home activity of the application which is displayed when the user opens the app.</p>
@@ -31,7 +37,7 @@ import java.util.Date;
  *
  * @author Gaëtan HERFRAY
  */
-public class MainActivity extends AppCompatActivity implements TasksAdapter.DeleteTaskListener {
+public class MainActivity extends AppCompatActivity implements TasksAdapter.DeleteTaskListener,  TasksAdapter.UpdateTaskListener {
     /**
      * List of all projects available in the application
      */
@@ -41,12 +47,12 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
      * List of all current tasks of the application
      */
     @NonNull
-    private final ArrayList<Task> tasks = new ArrayList<>();
+    private final List<Task> tasks = new ArrayList<>();
 
     /**
      * The adapter which handles the list of tasks
      */
-    private final TasksAdapter adapter = new TasksAdapter(tasks, this);
+    private final TasksAdapter adapter = new TasksAdapter(tasks, this, this);
 
     /**
      * The sort method to be used to display tasks
@@ -88,6 +94,10 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
     @NonNull
     private TextView lblNoTasks;
 
+    // FOR DATA
+    private TaskViewModel taskViewModel;
+    private static long PROJECT_ID = 1L;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -96,16 +106,41 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
 
         listTasks = findViewById(R.id.list_tasks);
         lblNoTasks = findViewById(R.id.lbl_no_task);
+        for (int i = 0; i<allProjects.length; i++) {
+            tasks.addAll((Collection<? extends Task>) this.taskViewModel.getTasks(allProjects[i].getId()));
+        }
+        this.configureViewModel();
 
         listTasks.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false));
         listTasks.setAdapter(adapter);
-
         findViewById(R.id.fab_add_task).setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 showAddTaskDialog();
             }
         });
+    }
+
+    private void configureViewModel(){
+        ViewModelFactory mViewModelFactory = Injection.provideViewModelFactory(this);
+        this.taskViewModel = ViewModelProviders.of(this, mViewModelFactory).get(TaskViewModel.class);
+        this.taskViewModel.init(PROJECT_ID);
+    }
+
+    private void getCurrentProject(long projectId){
+        this.taskViewModel.getProject(projectId).observe(this, this::updateSideColor);
+    }
+
+    private void updateSideColor(Project project){
+    }
+
+    private void getTasksSpecificProject(long projectId){
+        this.taskViewModel.getTasks(projectId).observe(this, this::updateTasksList);
+    }
+
+    private void updateTasksList(List<Task> tasks) {
+        this.adapter.updateTasks(tasks);
+
     }
 
     @Override
@@ -135,7 +170,14 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
 
     @Override
     public void onDeleteTask(Task task) {
+        this.taskViewModel.deleteTask(task.getId());
         tasks.remove(task);
+        updateTasks();
+    }
+
+    public void onUpdateTask(Task task){
+        task.setDone(!task.isDone());
+        this.taskViewModel.updateTask(task);
         updateTasks();
     }
 
@@ -170,9 +212,11 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
                         id,
                         taskProject.getId(),
                         taskName,
-                        new Date().getTime()
+                        new Date().getTime(),
+                        false
                 );
 
+                this.taskViewModel.createTask(task);
                 addTask(task);
 
                 dialogInterface.dismiss();
@@ -294,6 +338,7 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
             dialogSpinner.setAdapter(adapter);
         }
     }
+
 
     /**
      * List of all possible sort methods for task

@@ -2,6 +2,10 @@ package com.cleanup.todoc.model;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.room.Dao;
+import androidx.room.Entity;
+import androidx.room.ForeignKey;
+import androidx.room.PrimaryKey;
 
 import java.util.Comparator;
 
@@ -10,11 +14,23 @@ import java.util.Comparator;
  *
  * @author Gaëtan HERFRAY
  */
+@Entity(foreignKeys = @ForeignKey(entity = Project.class,
+        parentColumns = "id",
+        childColumns = "projectId"))
 public class Task {
     /**
      * The unique identifier of the task
      */
+    @PrimaryKey
     private long id;
+
+    public long getProjectId() {
+        return projectId;
+    }
+
+    public long getCreationTimestamp() {
+        return creationTimestamp;
+    }
 
     /**
      * The unique identifier of the project associated to the task
@@ -34,6 +50,16 @@ public class Task {
      */
     private long creationTimestamp;
 
+    private boolean done;
+
+    public boolean isDone() {
+        return done;
+    }
+
+    public void setDone(boolean done) {
+        this.done = done;
+    }
+
     /**
      * Instantiates a new Task.
      *
@@ -42,11 +68,12 @@ public class Task {
      * @param name              the name of the task to set
      * @param creationTimestamp the timestamp when the task has been created to set
      */
-    public Task(long id, long projectId, @NonNull String name, long creationTimestamp) {
+    public Task(long id, long projectId, @NonNull String name, long creationTimestamp, boolean done) {
         this.setId(id);
         this.setProjectId(projectId);
         this.setName(name);
         this.setCreationTimestamp(creationTimestamp);
+        this.setDone(done);
     }
 
     /**
@@ -153,4 +180,6 @@ public class Task {
             return (int) (left.creationTimestamp - right.creationTimestamp);
         }
     }
+
+
 }

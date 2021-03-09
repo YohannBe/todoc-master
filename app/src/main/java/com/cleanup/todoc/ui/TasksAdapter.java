@@ -4,6 +4,8 @@ import android.content.res.ColorStateList;
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.recyclerview.widget.RecyclerView;
+
+import android.text.Layout;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,13 +36,22 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
     private final DeleteTaskListener deleteTaskListener;
 
     /**
+     * The listener for when a task needs to be updated
+     */
+    @NonNull
+    private final UpdateTaskListener updateTaskListener;
+
+
+    /**
      * Instantiates a new TasksAdapter.
      *
      * @param tasks the list of tasks the adapter deals with to set
      */
-    TasksAdapter(@NonNull final List<Task> tasks, @NonNull final DeleteTaskListener deleteTaskListener) {
+    TasksAdapter(@NonNull final List<Task> tasks, @NonNull final DeleteTaskListener deleteTaskListener,
+                 @NonNull final UpdateTaskListener updateTaskListener) {
         this.tasks = tasks;
         this.deleteTaskListener = deleteTaskListener;
+        this.updateTaskListener = updateTaskListener;
     }
 
     /**
@@ -57,7 +68,7 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
     @Override
     public TaskViewHolder onCreateViewHolder(@NonNull ViewGroup viewGroup, int viewType) {
         View view = LayoutInflater.from(viewGroup.getContext()).inflate(R.layout.item_task, viewGroup, false);
-        return new TaskViewHolder(view, deleteTaskListener);
+        return new TaskViewHolder(view, deleteTaskListener, updateTaskListener);
     }
 
     @Override
@@ -82,6 +93,15 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
         void onDeleteTask(Task task);
     }
 
+    public interface UpdateTaskListener {
+        /**
+         * Called when a task needs to be deleted.
+         *
+         * @param task the task that needs to be deleted
+         */
+        void onUpdateTask(Task task);
+    }
+
     /**
      * <p>ViewHolder for task items in the tasks list</p>
      *
@@ -92,6 +112,8 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
          * The circle icon showing the color of the project
          */
         private final AppCompatImageView imgProject;
+
+        private final View taskLayout;
 
         /**
          * The TextView displaying the name of the task
@@ -113,29 +135,36 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
          */
         private final DeleteTaskListener deleteTaskListener;
 
+        private final UpdateTaskListener updateTaskListener;
+
         /**
          * Instantiates a new TaskViewHolder.
-         *
-         * @param itemView the view of the task item
+         *  @param itemView the view of the task item
          * @param deleteTaskListener the listener for when a task needs to be deleted to set
+         * @param updateTaskListener
          */
-        TaskViewHolder(@NonNull View itemView, @NonNull DeleteTaskListener deleteTaskListener) {
+        TaskViewHolder(@NonNull View itemView, @NonNull DeleteTaskListener deleteTaskListener, UpdateTaskListener updateTaskListener) {
             super(itemView);
 
             this.deleteTaskListener = deleteTaskListener;
+            this.updateTaskListener = updateTaskListener;
 
             imgProject = itemView.findViewById(R.id.img_project);
             lblTaskName = itemView.findViewById(R.id.lbl_task_name);
             lblProjectName = itemView.findViewById(R.id.lbl_project_name);
             imgDelete = itemView.findViewById(R.id.img_delete);
+            taskLayout = itemView.findViewById(R.id.item_task);
 
-            imgDelete.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
-                    final Object tag = view.getTag();
-                    if (tag instanceof Task) {
-                        TaskViewHolder.this.deleteTaskListener.onDeleteTask((Task) tag);
-                    }
+            itemView.setOnClickListener(view -> {
+                final Object tag = view.getTag();
+                if (tag instanceof  Task)
+                    TaskViewHolder.this.updateTaskListener.onUpdateTask((Task) tag);
+            });
+
+            imgDelete.setOnClickListener(view -> {
+                final Object tag = view.getTag();
+                if (tag instanceof Task) {
+                    TaskViewHolder.this.deleteTaskListener.onDeleteTask((Task) tag);
                 }
             });
         }
@@ -148,6 +177,7 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
         void bind(Task task) {
             lblTaskName.setText(task.getName());
             imgDelete.setTag(task);
+            taskLayout.setTag(task);
 
             final Project taskProject = task.getProject();
             if (taskProject != null) {
@@ -158,6 +188,8 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
                 lblProjectName.setText("");
             }
 
+            if (task.isDone())
+                lblTaskName.setText(task.getName() + ": is done");
         }
     }
 }
