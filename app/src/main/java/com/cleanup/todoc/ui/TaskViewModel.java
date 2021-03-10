@@ -47,6 +47,9 @@ public class TaskViewModel extends ViewModel {
         });
     }
 
+    public LiveData<List<Task>> getAllTasks() {
+        return taskDataSource.getAllTasks();
+    }
 
 
     public void deleteTask(long taskId) {

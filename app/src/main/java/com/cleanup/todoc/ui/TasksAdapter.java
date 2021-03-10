@@ -1,6 +1,7 @@
 package com.cleanup.todoc.ui;
 
 import android.content.res.ColorStateList;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.widget.AppCompatImageView;
 import androidx.recyclerview.widget.RecyclerView;
@@ -15,6 +16,7 @@ import com.cleanup.todoc.R;
 import com.cleanup.todoc.model.Project;
 import com.cleanup.todoc.model.Task;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -41,15 +43,12 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
     @NonNull
     private final UpdateTaskListener updateTaskListener;
 
-
     /**
      * Instantiates a new TasksAdapter.
      *
-     * @param tasks the list of tasks the adapter deals with to set
      */
-    TasksAdapter(@NonNull final List<Task> tasks, @NonNull final DeleteTaskListener deleteTaskListener,
+    TasksAdapter( @NonNull final DeleteTaskListener deleteTaskListener,
                  @NonNull final UpdateTaskListener updateTaskListener) {
-        this.tasks = tasks;
         this.deleteTaskListener = deleteTaskListener;
         this.updateTaskListener = updateTaskListener;
     }
@@ -79,6 +78,11 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
     @Override
     public int getItemCount() {
         return tasks.size();
+    }
+
+    @NonNull
+    public List<Task> getTasks() {
+        return tasks;
     }
 
     /**
@@ -139,7 +143,8 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
 
         /**
          * Instantiates a new TaskViewHolder.
-         *  @param itemView the view of the task item
+         *
+         * @param itemView           the view of the task item
          * @param deleteTaskListener the listener for when a task needs to be deleted to set
          * @param updateTaskListener
          */
@@ -157,7 +162,7 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
 
             itemView.setOnClickListener(view -> {
                 final Object tag = view.getTag();
-                if (tag instanceof  Task)
+                if (tag instanceof Task)
                     TaskViewHolder.this.updateTaskListener.onUpdateTask((Task) tag);
             });
 
