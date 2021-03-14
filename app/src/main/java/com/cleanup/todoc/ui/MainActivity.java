@@ -234,22 +234,7 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
         } else {
             lblNoTasks.setVisibility(View.GONE);
             listTasks.setVisibility(View.VISIBLE);
-            switch (sortMethod) {
-                case ALPHABETICAL:
-                    Collections.sort(adapter.getTasks(), new Task.TaskAZComparator());
-                    break;
-                case ALPHABETICAL_INVERTED:
-                    Collections.sort(adapter.getTasks(), new Task.TaskZAComparator());
-                    break;
-                case RECENT_FIRST:
-                    Collections.sort(adapter.getTasks(), new Task.TaskRecentComparator());
-                    break;
-                case OLD_FIRST:
-                    Collections.sort(adapter.getTasks(), new Task.TaskOldComparator());
-                    break;
-
-            }
-            adapter.updateTasks(adapter.getTasks());
+            adapter.updateTasks(taskViewModel.updateListTaskSort(adapter.getTasks(), sortMethod));
         }
     }
 
@@ -311,7 +296,7 @@ public class MainActivity extends AppCompatActivity implements TasksAdapter.Dele
     /**
      * List of all possible sort methods for task
      */
-    private enum SortMethod {
+    public enum SortMethod {
         /**
          * Sort alphabetical by name
          */

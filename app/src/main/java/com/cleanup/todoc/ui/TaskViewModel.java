@@ -10,6 +10,7 @@ import com.cleanup.todoc.repositories.ProjectDataRepository;
 import com.cleanup.todoc.repositories.TaskDataRepository;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Executor;
 
@@ -62,5 +63,24 @@ public class TaskViewModel extends ViewModel {
         executor.execute(() -> {
             taskDataSource.updateTask(task);
         });
+    }
+
+    public List<Task> updateListTaskSort(List<Task> originalList, MainActivity.SortMethod sortMethod){
+        switch (sortMethod) {
+            case ALPHABETICAL:
+                Collections.sort(originalList, new Task.TaskAZComparator());
+                break;
+            case ALPHABETICAL_INVERTED:
+                Collections.sort(originalList, new Task.TaskZAComparator());
+                break;
+            case RECENT_FIRST:
+                Collections.sort(originalList, new Task.TaskRecentComparator());
+                break;
+            case OLD_FIRST:
+                Collections.sort(originalList, new Task.TaskOldComparator());
+                break;
+
+        }
+        return originalList;
     }
 }
