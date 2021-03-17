@@ -4,6 +4,7 @@ import androidx.annotation.Nullable;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.cleanup.todoc.enums.SortMethod;
 import com.cleanup.todoc.model.Project;
 import com.cleanup.todoc.model.Task;
 import com.cleanup.todoc.repositories.ProjectDataRepository;
@@ -38,9 +39,6 @@ public class TaskViewModel extends ViewModel {
         return this.currentProject;
     }
 
-    public LiveData<List<Task>> getTasks(long projectId) {
-        return taskDataSource.getTasks(projectId);
-    }
 
     public void createTask(final Task task) {
         executor.execute(() -> {
@@ -65,7 +63,7 @@ public class TaskViewModel extends ViewModel {
         });
     }
 
-    public List<Task> updateListTaskSort(List<Task> originalList, MainActivity.SortMethod sortMethod){
+    public List<Task> updateListTaskSort(List<Task> originalList, SortMethod sortMethod){
         switch (sortMethod) {
             case ALPHABETICAL:
                 Collections.sort(originalList, new Task.TaskAZComparator());

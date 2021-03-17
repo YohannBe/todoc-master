@@ -32,8 +32,10 @@ import java.util.List;
 public class TaskDaoTest {
 
     private ToDocDatabase database;
-    private static long PROJECT_ID = 1L;
-    private static Task TASK_DEMO = new Task(1, PROJECT_ID, "hello world", new Date().getTime(), false);
+    private static final long PROJECT_ID = 1L;
+    private static final Task TASK_DEMO = new Task(1, PROJECT_ID, "hello world", new Date().getTime(), false);
+    private static final Task TASK_DEMO_DELETE = new Task(3, PROJECT_ID, "hello world", new Date().getTime(), false);
+    private static final Task TASK_DEMO_UPDATE = new Task(5, PROJECT_ID, "hello world", new Date().getTime(), false);
 
     @Rule
     public InstantTaskExecutorRule instantTaskExecutorRule = new InstantTaskExecutorRule();
@@ -82,6 +84,28 @@ public class TaskDaoTest {
         List<Task> tasks = LiveDataTestUtil.getValue(this.database.taskDao().getAllTasks());
         Task task = tasks.get(0);
         Assert.assertTrue(PROJECT_ID == task.getProject().getId() && task.getName().equals(TASK_DEMO.getName()));
+    }
+
+    @Test
+    public void deleteTaskWithSuccess() throws InterruptedException{
+        this.database.taskDao().insertTask(TASK_DEMO_DELETE);
+        List<Task> tasks = LiveDataTestUtil.getValue(this.database.taskDao().getAllTasks());
+        Task task = tasks.get(0);
+        Assert.assertTrue(PROJECT_ID == task.getProject().getId() && task.getName().equals(TASK_DEMO_DELETE.getName()));
+        this.database.taskDao().deleteTask(TASK_DEMO_DELETE.getId());
+        tasks = LiveDataTestUtil.getValue(this.database.taskDao().getAllTasks());
+        Assert.assertFalse(tasks.contains(TASK_DEMO_DELETE));
+    }
+
+    @Test
+    public void updateTaskWithSuccess() throws InterruptedException {
+        this.database.taskDao().insertTask(TASK_DEMO_UPDATE);
+        List<Task> tasks = LiveDataTestUtil.getValue(this.database.taskDao().getAllTasks());
+        Task task = tasks.get(0);
+        task.setDone(true);
+        this.database.taskDao().updateTask(task);
+        tasks = LiveDataTestUtil.getValue(this.database.taskDao().getAllTasks());
+        Assert.assertTrue(tasks.get(0).isDone());
     }
 
     @After
