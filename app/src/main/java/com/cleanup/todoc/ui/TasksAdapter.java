@@ -29,7 +29,7 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
      * The list of tasks the adapter deals with
      */
     @NonNull
-    private List<Task> tasks;
+    private List<Task> tasks = new ArrayList<>();
 
     /**
      * The listener for when a task needs to be deleted
@@ -45,9 +45,8 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
 
     /**
      * Instantiates a new TasksAdapter.
-     *
      */
-    TasksAdapter( @NonNull final DeleteTaskListener deleteTaskListener,
+    TasksAdapter(@NonNull final DeleteTaskListener deleteTaskListener,
                  @NonNull final UpdateTaskListener updateTaskListener) {
         this.deleteTaskListener = deleteTaskListener;
         this.updateTaskListener = updateTaskListener;
@@ -77,7 +76,7 @@ public class TasksAdapter extends RecyclerView.Adapter<TasksAdapter.TaskViewHold
 
     @Override
     public int getItemCount() {
-        return tasks.size();
+            return tasks.size();
     }
 
     @NonNull
